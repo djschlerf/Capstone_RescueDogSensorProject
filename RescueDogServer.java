@@ -111,13 +111,20 @@ String server = "webftp.uaa.alaska.edu/students/capstone/data";
    ResultSet rs=stmt.executeQuery("select max(trans_id) from dog_transactions");
    rs.next();
    int nextTrans = rs.getInt(1) +1;
+   String TransType = "0";
+   if (myStringArray[2].equals("SOUND")) TransType = "1";
+   if (myStringArray[2].equals("BITE1")) TransType = "2";
+   if (myStringArray[2].equals("BITE2")) TransType = "3";
+   if (myStringArray[2].equals("PING")) TransType = "4";
    
-   System.out.println("INSERT INTO rescue_dog.dog_transactions VALUES ("+nextTrans+",1,1,61.188871, -149.820151,'Input from a mic array','2017-10-08 10:49:30');");
-   stmt.executeUpdate("INSERT INTO rescue_dog.dog_transactions VALUES ("+nextTrans+",1,1,61.188871, -149.820151,'Input from a mic array','2017-10-08 10:49:30');");
+   // mSA[0] is DogID, mSA[1] is PiNum, mSA [2] is TransType, mSA[3] is DTTM, mSA[4] is Lat, mSA[5] is Long, mSA[6] is Elevation, mSA[7] is Temp, mSA[8] is Text
+   
+   System.out.println("INSERT INTO rescue_dog.dog_transactions VALUES ("+nextTrans+","+myStringArray[0]+","+TransType+",'"+myStringArray[3]+"',"+myStringArray[4]+", "+myStringArray[5]+","+myStringArray[6]+","+myStringArray[7]+",'Heartbeat');");
+   stmt.executeUpdate("INSERT INTO rescue_dog.dog_transactions VALUES ("+nextTrans+","+myStringArray[0]+","+TransType+",'"+myStringArray[3]+"',"+myStringArray[4]+", "+myStringArray[5]+","+myStringArray[6]+","+myStringArray[7]+",'Heartbeat');");
    
   // INSERT INTO rescue_dog.dog_transactions VALUES (49,1,1,61.188871, -149.820151,'Input from a mic array','2017-10-08 10:49:30');
    
-   // for(String w:myStringArray) System.out.println("Part: " + w);
+   for(String w:myStringArray) System.out.println("Part: " + w);
 
   }
  }
