@@ -34,20 +34,21 @@
               function initMap()    
               {
                 map = new google.maps.Map(document.getElementById('map'), {
-                  zoom: 19,
+                  zoom: 14,
                   center: new google.maps.LatLng(61.188575, -149.825451),
                   mapTypeId: 'satellite'
                 });
                 var script = document.createElement('script');
-                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data.js';
+                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data2.js';
                 document.getElementsByTagName('head')[0].appendChild(script);
-              }
+              } 
 
               // Loop through the results array and place a marker for each
               // set of coordinates.
               var nLength = 0;
               var nMarks;
-              window.eqfeed_callback = function(results) {
+              window.eqfeed_callback = function(results) 
+              {
                 for (var i = 0; i < results.features.length; i++) 
                 {
                   var coords = results.features[i].geometry.coordinates;                //pulls the cords array out of the record field
@@ -66,17 +67,18 @@
                                 "\nDisaster: " + results.features[i].properties.place + 
                                 "\nEvent: "  + results.features[i].properties.event+ 
                                 "\nDog ID:"  + results.features[i].id;
-
-                    //create the map marker
-                          var marker = new google.maps.Marker({
-                          position: latLng,
-                          icon: {
-                          url: results.features[i].properties.url,
-                          scaledSize: new google.maps.Size(30, 30)
-                          },
-                          title: infotag,
-                          map: map
-                        });
+                                
+                  //create the map marker
+                    var marker = new google.maps.Marker({
+                    position: latLng,
+                    icon: {
+                    url: results.features[i].properties.url,
+                    scaledSize: new google.maps.Size(30, 30)
+                    },
+                    title: infotag,
+                    map: map
+                    });
+                  }
 
                   //Pushes the Polygon point object into the arrary of objects
                   dogpathcords.push(doggyloc);                                  

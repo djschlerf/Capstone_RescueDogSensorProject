@@ -34,15 +34,15 @@
               function initMap()    
               {
                 map = new google.maps.Map(document.getElementById('map'), {
-                  zoom: 19,
+                  zoom: 14,
                   center: new google.maps.LatLng(61.188575, -149.825451),
                   mapTypeId: 'satellite'
                 });
                 var script = document.createElement('script');
-                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data.js';
+                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data2.js';
                 document.getElementsByTagName('head')[0].appendChild(script);
               }
-
+ 
               // Loop through the results array and place a marker for each
               // set of coordinates.
               var nLength = 0;
@@ -67,6 +67,8 @@
                                 "\nEvent: "  + results.features[i].properties.event+ 
                                 "\nDog ID:"  + results.features[i].id;
 
+                  if(results.features[i].properties.event == "Bite 2")
+                  {
                     //create the map marker
                           var marker = new google.maps.Marker({
                           position: latLng,
@@ -77,6 +79,7 @@
                           title: infotag,
                           map: map
                         });
+                  }
 
                   //Pushes the Polygon point object into the arrary of objects
                   dogpathcords.push(doggyloc);                                  
