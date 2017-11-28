@@ -1,129 +1,29 @@
+package RescueDog;
 //  Everett Clary, Rescue Dog Server CSCE 470 Capstone project with Dave Schlerf and Jacob Wingerd
-// 11/01/2017
+//  11/01/2017
 
 import java.io.*;
-import java.net.*;
+import java.net.*; 
 import java.sql.*;
+import java.lang.*;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 // NOTE SAVE TEXT FILES AS TYPE .JS
 
 class RescueDogServer {
 
-    private static void showServerReply(FTPClient ftpClient) {
-        String[] replies = ftpClient.getReplyStrings();
-        if (replies != null && replies.length > 0) {
-            for (String aReply : replies) {
-                System.out.println("SERVER: " + aReply);
-            }
-        }
-    }
-    
-    public static void main(String argv[]) throws Exception {
 
-        try {
-// Connect to local mySQL database
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/rescue_dog?autoReconnect=true&useSSL=false", "rescuedog", "rescuedog");
+public static void main(String argv[]) throws Exception {
 
-// DataOutputStream does unicode support and wrote with 2 characters per actual character
-            FileWriter file;
-            BufferedWriter bw = null;
-            file = new FileWriter("C:\\Users\\gato4_000\\test_data.js");
-            bw = new BufferedWriter(file);
-
-// Begin inserted .js file supporting google maps
-            bw.write("eqfeed_callback({\"type\":\"FeatureCollection\",\"features\":[");
-            bw.newLine();
-
-// prepare SQL statement to return all dog transactions from DB
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select * from dog_transactions");
-
-// for each transaction record dependent on trans type, output properly formatted lat/long, image, appropriate meta data 
-            while (rs.next()) {
-                System.out.println(rs.getInt(1) + " " + rs.getInt(2) + " " + rs.getInt(3) + " " + rs.getString(4) + " " + rs.getString(5) + " " + rs.getString(6) + " " + rs.getString(7));
-                if (rs.getInt(3) == 4) // Trans Type is PING
-                {
-                    bw.write("{\"type\":\"Feature\",\"properties\":{\"place\":\"Disaster Area X\",\"url\":\"http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png\",\"event\":\"Heartbeat\",\"time\":\"" + rs.getString(7) + "\"}");
-                    bw.newLine();
-                } else if (rs.getInt(3) == 1) // Trans Type is SOUND
-                {
-                    bw.write("{\"type\":\"Feature\",\"properties\":{\"place\":\"Disaster Area X\",\"url\":\"http://students.uaa.alaska.edu/capstone/images/schlerf_sound.png\",\"event\":\"Sound\",\"time\":\"" + rs.getString(7) + "\"}");
-                    bw.newLine();
-                } else if (rs.getInt(3) == 2) // Trans Type is BITE1
-                {
-                    bw.write("{\"type\":\"Feature\",\"properties\":{\"place\":\"Disaster Area X\",\"url\":\"http://students.uaa.alaska.edu/capstone/images/schlerf_contact1.png\",\"event\":\"Contact 1\",\"time\":\"" + rs.getString(7) + "\"}");
-                    bw.newLine();
-                } else if (rs.getInt(3) == 3) // Trans Type is BITE2
-                {
-                    bw.write("{\"type\":\"Feature\",\"properties\":{\"place\":\"Disaster Area X\",\"url\":\"http://students.uaa.alaska.edu/capstone/images/schlerf_contact2.png\",\"event\":\"Contact 1\",\"time\":\"" + rs.getString(7) + "\"}");
-                    bw.newLine();
-                }   // next line is common to all transaction types
-                bw.write(",\"geometry\":{\"type\":\"Point\",\"coordinates\":[" + rs.getString(5) + "," + rs.getString(4) + "]},\"id\":\"Dog-" + rs.getInt(2) + "\"}");
-                if (rs.isLast() != true) {
-                    bw.write(",");
-                } else {
-                    bw.write("]});");
-                }
-// testing of selected data    
-// bw.write(rs.getInt(1)+" "+rs.getInt(2)+" "+rs.getInt(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7));
-                bw.newLine();
-            }
-            bw.close();   // close writing to file
-// con.close();  // close database connection
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-////////////////////////////////  FTP Section
-
-        String server = "webftp.uaa.alaska.edu";
-        int port = 21;
-        String user = "etclary";
-        String pass = "Ig88yoda";
-
-        FTPClient ftpClient = new FTPClient();
-        try {
-            System.out.println("Connecting to server:"+server+" and port:"+port);
-            ftpClient.connect(server, port);
-            showServerReply(ftpClient);
-            System.out.println("Setting Login Info.");
-            ftpClient.login(user, pass);
-            showServerReply(ftpClient);
-            System.out.println("Entering Local Passive Mode");
-            ftpClient.enterLocalPassiveMode();
-            showServerReply(ftpClient);
-            System.out.println("Setting File Type Binary File Type");
-            ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-            showServerReply(ftpClient);
-            System.out.println("Changing Working Directory to: //students//capstone//data");
-            ftpClient.changeWorkingDirectory("//students//capstone//data");
-            showServerReply(ftpClient);
-            // APPROACH #1: uploads first file using an InputStream
-            File firstLocalFile = new File("C:\\Users\\gato4_000\\test_data.js");
-
-            String firstRemoteFile = "test_data.js";
-            InputStream inputStream = new FileInputStream(firstLocalFile);
-
-            System.out.println("Start uploading first file");
-            boolean done = ftpClient.storeFile(firstRemoteFile, inputStream);
-            inputStream.close();
-            if (done) {
-                System.out.println("The first file is uploaded successfully.");
-            }
-            else System.out.println("The first file upload NOT successfull.");
-        } catch (IOException ex) {
-            System.out.println("Error: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-
-////////////////////////////////*/  Receiving Pi Input Section
+        // New thread process spawn here, PushFTPforDogPath
+        Thread t = new Thread(new PushFTPforDogPath());
+        t.start();
+        ////////////////////////////////*/  Receiving Pi Input Section
         String clientSentence;
         String capitalizedSentence;
         ServerSocket welcomeSocket = new ServerSocket(6789);
         String[] myStringArray;
         Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/rescue_dog?autoReconnect=true&useSSL=false", "rescuedog", "rescuedog");
-
         // loop listening for TCP socket connections from PI forever
         while (true) {
             Socket connectionSocket = welcomeSocket.accept();
