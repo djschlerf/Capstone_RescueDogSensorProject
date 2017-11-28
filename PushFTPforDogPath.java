@@ -34,7 +34,7 @@ public class PushFTPforDogPath implements Runnable {
     } // end showServer Reply
     
     @Override public void run(){
-        
+     while (true){
         try {
 
     // Connect to local mySQL database
@@ -132,5 +132,17 @@ public class PushFTPforDogPath implements Runnable {
                 System.out.println("Error: " + ex.getMessage());
                 ex.printStackTrace();
             } // end catch (IOException ex)
+       
+        //Pause for 60 seconds
+       
+       try {
+            Thread.sleep(60000);                 
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+
+       //Print a message
+       System.out.println("Finished pausing for 60 seconds.");
+     } // end while (true)
     }  // end void run()
 } // end PushFTPforDogPath
