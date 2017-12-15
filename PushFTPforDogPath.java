@@ -95,8 +95,8 @@ public class PushFTPforDogPath implements Runnable {
 
             String server = "webftp.uaa.alaska.edu";
             int port = 21;
-            String user = "etclary";
-            String pass = "Ig88yoda";
+            String user = ""; // enter UAA user name here
+            String pass = ""; // enter UAA password here
 
             FTPClient ftpClient = new FTPClient();
             try {
