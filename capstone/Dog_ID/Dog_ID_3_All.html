@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset="utf-8">
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Expires" content="-1" />
+
+      <title>Rescue Dog Tracker Landing page</title>
+      <link rel="icon" href="http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png">
+    <style>
+    /* Most of what is here is generated via the scripts below on load of the page. */
+       #map {
+        height: 500px;
+        width: 500px;
+       } 
+
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel 
+      {
+        position: absolute;
+        top: 5px;
+        width: 280px;
+        right: 7px;
+        z-index: 1;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 5px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <body>
+
+      <table style="width:500" align="center" border=0>
+        <tr>
+          <td>
+            <div id="floating-panel">
+                  <input onclick="clearSound();" type=button value="Hide S">
+                  <input onclick="showMarkers1();" type=button value="Show S">
+
+                  <input onclick="clearBite1();" type=button value="Hide C1">
+                  <input onclick="showMarkers2();" type=button value="Show C1">     
+                  <br>  
+                  <input onclick="clearBite2();" type=button value="Hide C2">
+                  <input onclick="showMarkers3();" type=button value="Show C2">
+
+                  <input onclick="clearHeart();" type=button value="Hide H">
+                  <input onclick="showMarkers4();" type=button value="Show H">              
+            </div>
+            <div id="map"></div>
+            <script>
+
+              //The map .... duh - ALSO when i changes this to the match with my other Vars are named like, 
+              // map render no longer works ... not yet sure why
+              var map;                            
+              var DOG_PolygonPathArray = [];      //used to populate the polygon path
+              var PAGE_RefreshRate = 10;         //<-- In seconds, change to your needs - For testing, it is set low, recommend it be 5 minutes
+              var PAGE_LastUserAction = 0;        //
+              var PAGE_HasFocus = false;          //Do we have focus?
+              var PAGE_LostFocusCount = 0;        //counter
+              var PAGE_FocusMargin = 10;          // If we lose focus more then the margin we want to refresh 
+              var myTextArea = document.getElementById('mytext');
+              var breakLine = "\n--------------------------------\n";
+              var MAP_CenterOnMe;
+              var DOG_EventType;
+              var MAP_arraySoundMarkers = [];
+              var MAP_arrayBite_1_Markers = [];
+              var MAP_arrayBite_2_Markers = [];
+              var MAP_arrayHeartMarkers = [];
+              var BUTTON1_click = 0;
+              var BUTTON2_click = 0;
+              var BUTTON3_click = 0;
+
+              function initMap()    
+              {
+                map = new google.maps.Map(document.getElementById('map'), {
+                                zoom: 17,
+                                center: new google.maps.LatLng(34,-34),
+                                mapTypeId: 'satellite'
+                });
+                
+                var script = document.createElement('script');
+                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data3.js'; 
+                document.getElementsByTagName('head')[0].appendChild(script);
+              }
+              
+
+              // Loop through the DOG_Data_Array array and place a MAP_Marker for each set of coordinates.
+              window.eqfeed_callback = function(DOG_Data_Array) {
+                google.maps.event.trigger(map, 'resize');
+
+                for (var i = 0; i < DOG_Data_Array.features.length; i++) 
+                {
+                  //pulls the cords array out of the record field
+                  var DATA_Cords = DOG_Data_Array.features[i].geometry.coordinates;
+
+                  //creates the Lat/Long variable for the MAP_Marker    
+                  var MARKER_LatLng = new google.maps.LatLng(DATA_Cords[1],DATA_Cords[0]);   
+
+                  //created the polygon object to draw the connecting line with         
+                  var DOG_PolygonPoint_LatLng = {lat: DATA_Cords[1], lng: DATA_Cords[0]};          
+
+                  MAP_CenterOnMe = new google.maps.LatLng(DATA_Cords[1],DATA_Cords[0]);
+
+                  DOG_EventType = DOG_Data_Array.features[i].properties.event;
+
+                  // This is the info when you mouse over the icon on the map and displays needed info
+                    var MARKER_ToolTipInfo = "Lat: " + DATA_Cords[1] + 
+                                "\nLng: " + DATA_Cords[0] +  
+                                "\nTime: " + DOG_Data_Array.features[i].properties.time + 
+                                "\nDisaster: " + DOG_Data_Array.features[i].properties.place + 
+                                "\nEvent: "  + DOG_Data_Array.features[i].properties.event + 
+                                "\nDog ID:"  + DOG_Data_Array.features[i].id + 
+                                "\nNODE: " + i+1 +
+                                "\nERROR: " + (DOG_Data_Array.features.length-i) + "";
+
+
+
+                  if(DOG_EventType == "Heartbeat")     
+                  {
+                          if(DOG_Data_Array.features.length-i <= 10)
+                          {
+                              var MAP_Marker = new google.maps.Marker({
+                              position: MARKER_LatLng,
+                              icon: {
+                              url: DOG_Data_Array.features[i].properties.url,
+                              scaledSize: new google.maps.Size(30, 30)
+                              },
+                              title: MARKER_ToolTipInfo,
+                              map: map 
+                            });
+
+                            MAP_arrayHeartMarkers.push(MAP_Marker); 
+                            DOG_PolygonPathArray.push(DOG_PolygonPoint_LatLng); 
+                        }  
+                  } 
+                  else
+                  {
+                           //create the map MAP_Marker
+                          var MAP_Marker = new google.maps.Marker({
+                          position: MARKER_LatLng,
+                          icon: {
+                          url: DOG_Data_Array.features[i].properties.url,
+                          scaledSize: new google.maps.Size(30, 30)
+                          },
+                          title: MARKER_ToolTipInfo,
+                          map: map
+                        });
+
+                        if(DOG_EventType == "Sound")
+                        {
+                          MAP_arraySoundMarkers.push(MAP_Marker);
+                        }  
+
+                        if(DOG_EventType == "Bite 1")
+                        {
+                          MAP_arrayBite_1_Markers.push(MAP_Marker);
+                        }  
+
+                        if(DOG_EventType == "Bite 2")
+                        {
+                          MAP_arrayBite_2_Markers.push(MAP_Marker);
+                        }       
+
+                        if(DOG_EventType == "Heartbeat")   
+                        {
+                          MAP_arrayHeartMarkers.push(MAP_Marker); 
+                        }
+
+                        if(DOG_Data_Array.features.length-i <= 10)
+                          {
+                            DOG_PolygonPathArray.push(DOG_PolygonPoint_LatLng); 
+                          }
+                  }
+
+                                         
+                }
+
+                //Create the polygons for the nap
+                var DOG_Polygon_Path_Top = new google.maps.Polyline({
+                  path: DOG_PolygonPathArray,
+                  geodesic: true,
+                  strokeColor: '#FFFF00',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 2
+                });
+
+                var DOG_Polygon_Path_Bottom = new google.maps.Polyline({
+                  path: DOG_PolygonPathArray,
+                  geodesic: true,
+                  strokeColor: '#000000',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 1
+                });
+
+                //Put said polygons on the map
+                DOG_Polygon_Path_Top.setMap(map);
+                DOG_Polygon_Path_Bottom.setMap(map);
+
+                //center the map on the newest cords
+                map.setCenter(MAP_CenterOnMe);
+               
+              }
+
+              function reset() {
+              PAGE_LastUserAction = 0;
+              console.log("Reset");
+              }
+
+              function windowHasFocus() {
+              PAGE_HasFocus = true;
+              }
+
+              function windowLostFocus() {
+              PAGE_HasFocus = false;
+              PAGE_LostFocusCount++;
+              console.log(PAGE_LostFocusCount + " <~ Lost Focus");
+              }
+
+              setInterval(function () {
+              PAGE_LastUserAction++;
+              refreshCheck();
+              }, 1000);
+
+              function refreshCheck() {
+              var focus = window.onfocus;
+              if ((PAGE_LastUserAction >= PAGE_RefreshRate && !PAGE_HasFocus && document.readyState == "complete") || PAGE_LostFocusCount > PAGE_FocusMargin) {
+                  window.location.reload();       // If this is called no reset is needed
+                  reset();                        // We want to reset just to make sure the location reload is not called.
+                  }
+              }
+              
+              window.addEventListener("focus", windowHasFocus, false);
+              window.addEventListener("blur", windowLostFocus, false);
+              window.addEventListener("click", reset, false);
+              window.addEventListener("mousemove", reset, false);
+              window.addEventListener("keypress", reset, false);
+
+              function isNumber(x) {
+                  return !isNaN(parseFloat(x));
+              }
+
+              // Sets the map on all markers in the array.
+              function showSound(map) {
+                for (var i = 0; i < MAP_arraySoundMarkers.length; i++) {
+                  MAP_arraySoundMarkers[i].setMap(map);
+                }
+              }
+
+              // Removes the markers from the map, but keeps them in the array.
+              function clearSound() {
+                showSound(null);
+              }
+
+              // Shows any markers currently in the array.
+              function showMarkers1() {
+                showSound(map);
+              }
+
+              function showBite1(map) {
+                for (var i = 0; i < MAP_arrayBite_1_Markers.length; i++) {
+                  MAP_arrayBite_1_Markers[i].setMap(map);
+                }
+              }
+
+              // Removes the markers from the map, but keeps them in the array.
+              function clearBite1() {
+                showBite1(null);
+              }
+
+              // Shows any markers currently in the array.
+              function showMarkers2() {
+                showBite1(map);
+              }
+
+              function showBite2(map) {
+                for (var i = 0; i < MAP_arrayBite_2_Markers.length; i++) {
+                  MAP_arrayBite_2_Markers[i].setMap(map);
+                }
+              }
+
+              // Removes the markers from the map, but keeps them in the array.
+              function clearBite2() {
+                showBite2(null);
+              }
+
+              // Shows any markers currently in the array.
+              function showMarkers3() {
+                  showBite2(map);
+              }
+
+              function showHeart(map) {
+                for (var i = 0; i < MAP_arrayHeartMarkers.length; i++) {
+                  MAP_arrayHeartMarkers[i].setMap(map);
+                }
+              }
+
+              // Removes the markers from the map, but keeps them in the array.
+              function clearHeart() {
+                showHeart(null);
+              }
+
+              // Shows any markers currently in the array.
+              function showMarkers4() {
+                  showHeart(map);
+              }
+
+            </script>
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdVrQJBI36GMcXMbah5x_VJOXtOoTU0sw&callback=initMap"></script>
+          </td>
+        </tr>
+      </table>
+  </body>
+</html>

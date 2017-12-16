@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>Rescue Dog Tracker Landing page</title>
+      <link rel="icon" href="http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png">
+    <style>
+    /* Most of what is here is generated via the scripts below on load of the page. */
+       #map {
+        height: 500px;
+        width: 500px;
+       } 
+
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <body>
+
+      <table style="width:500" align="center" border=0>
+        <tr>
+          <td>
+            <div id="map"></div>
+            <script>
+              //The map .... duh - ALSO when i changes this to the match with my other Vars are named like, 
+              // map render no longer works ... not yet sure why
+              var map;                            
+              var DOG_PolygonPathArray = [];      //used to populate the polygon path
+              var PAGE_RefreshRate = 5;         //<-- In seconds, change to your needs - For testing, it is set low, recommend it be 5 minutes
+              var PAGE_LastUserAction = 0;        //
+              var PAGE_HasFocus = false;          //Do we have focus?
+              var PAGE_LostFocusCount = 0;        //counter
+              var PAGE_FocusMargin = 10;          // If we lose focus more then the margin we want to refresh
+
+              //Initialize the map
+              function initMap()    
+              {
+                map = new google.maps.Map(document.getElementById('map'), {
+                  zoom: 16,
+                  center: new google.maps.LatLng(61.188575, -149.825451),
+                  mapTypeId: 'roadmap'
+                });
+
+                var script = document.createElement('script');
+
+                //Location of Dog Data File
+                script.src = 'http://students.uaa.alaska.edu/capstone/data/test_data2.js';
+
+                document.getElementsByTagName('head')[0].appendChild(script);
+              }
+
+              var MAP_CenterOnMe;
+
+              // Loop through the DOG_Data_Array array and place a MAP_Marker for each set of coordinates.
+              window.eqfeed_callback = function(DOG_Data_Array) {
+                for (var i = 0; i < DOG_Data_Array.features.length; i++) 
+                {
+                  //pulls the cords array out of the record field
+                  var DATA_Cords = DOG_Data_Array.features[i].geometry.coordinates;
+
+                  //creates the Lat/Long variable for the MAP_Marker    
+                  var MARKER_LatLng = new google.maps.LatLng(DATA_Cords[1],DATA_Cords[0]);   
+
+                  //created the polygon object to draw the connecting line with         
+                  var DOG_PolygonPoint_LatLng = {lat: DATA_Cords[1], lng: DATA_Cords[0]};          
+
+                  //
+                  MAP_CenterOnMe = new google.maps.LatLng(DATA_Cords[1],DATA_Cords[0]);
+
+                  // This is the info when you mouse over the icon on the map and displays needed info
+                  var MARKER_ToolTipInfo = "Lat: " + DATA_Cords[1] + "\nLng: " + DATA_Cords[0] +  
+                                "\nTime: " + DOG_Data_Array.features[i].properties.time + 
+                                "\nDisaster: " + DOG_Data_Array.features[i].properties.place + 
+                                "\nEvent: "  + DOG_Data_Array.features[i].properties.event + 
+                                "\nDog ID:"  + DOG_Data_Array.features[i].id;
+
+                    //create the map MAP_Marker
+                          var MAP_Marker = new google.maps.Marker({
+                          position: MARKER_LatLng,
+                          icon: {
+                          url: DOG_Data_Array.features[i].properties.url,
+                          scaledSize: new google.maps.Size(30, 30)
+                          },
+                          title: MARKER_ToolTipInfo,
+                          map: map
+                        });
+
+                  //Pushes the Polygon point object into the arrary of objects
+                  DOG_PolygonPathArray.push(DOG_PolygonPoint_LatLng);                                  
+                }
+
+                //Create the polygons for the nap
+                var DOG_Polygon_Path_Top = new google.maps.Polyline({
+                  path: DOG_PolygonPathArray,
+                  geodesic: true,
+                  strokeColor: '#FFFF00',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 2
+                });
+
+                var DOG_Polygon_Path_Bottom = new google.maps.Polyline({
+                  path: DOG_PolygonPathArray,
+                  geodesic: true,
+                  strokeColor: '#000000',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 1
+                });
+
+                //Put said polygons on the map
+                DOG_Polygon_Path_Top.setMap(map);
+                DOG_Polygon_Path_Bottom.setMap(map);
+
+                //center the map on the newest cords
+                map.setCenter(MAP_CenterOnMe);
+              }
+
+              function reset() {
+              PAGE_LastUserAction = 0;
+              console.log("Reset");
+              }
+
+              function windowHasFocus() {
+              PAGE_HasFocus = true;
+              }
+
+              function windowLostFocus() {
+              PAGE_HasFocus = false;
+              PAGE_LostFocusCount++;
+              console.log(PAGE_LostFocusCount + " <~ Lost Focus");
+              }
+
+              setInterval(function () {
+              PAGE_LastUserAction++;
+              refreshCheck();
+              }, 1000);
+
+              function refreshCheck() {
+              var focus = window.onfocus;
+              if ((PAGE_LastUserAction >= PAGE_RefreshRate && !PAGE_HasFocus && document.readyState == "complete") || PAGE_LostFocusCount > PAGE_FocusMargin) {
+                  window.location.reload();       // If this is called no reset is needed
+                  reset();                        // We want to reset just to make sure the location reload is not called.
+                  }
+              }
+              
+              window.addEventListener("focus", windowHasFocus, false);
+              window.addEventListener("blur", windowLostFocus, false);
+              window.addEventListener("click", reset, false);
+              window.addEventListener("mousemove", reset, false);
+              window.addEventListener("keypress", reset, false);
+
+            </script>
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdVrQJBI36GMcXMbah5x_VJOXtOoTU0sw&callback=initMap"></script>
+          </td>
+        </tr>
+      </table>
+  </body>
+</html>

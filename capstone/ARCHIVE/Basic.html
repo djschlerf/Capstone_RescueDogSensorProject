@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+       #map {
+        height: 500px;
+        width: 500px;
+       }
+    </style>
+  </head>
+  <body>
+    <table style="width:25%" align="center" border=2>
+      <tr>
+        <th><h1><center>Rescue Dog Tracker</center></h1></th>
+      </tr>
+      <tr>
+        <th><h3><center>DOG ID: <font color="#FF3333">658245</font></center></h3></th>
+      </tr>
+      <tr>
+        <th><h3><center>SCHOOL CODING PROJECT</br>NOT LIVE DATA</center></h3></th>
+      </tr>
+      <tr>
+        <th>
+          <table align=center width=500 border=0>
+              <tr>
+                <td><img src="http://students.uaa.alaska.edu/capstone/images/schlerf_sound.png" alt="" border=0 height=20 width=20></img>  Sound event </td>
+                <td><img src="http://students.uaa.alaska.edu/capstone/images//schlerf_contact.png" alt="" border=0 height=20 width=20></img>  Dog Found Person </td>
+                <td><img src="http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png" alt="" border=0 height=20 width=20></img>  Dog Ping</td>
+              </tr>
+          </table>
+        </th>
+      </tr>
+      <tr>
+        <td>
+        <div id="map"></div>
+            <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 19,
+          center: new google.maps.LatLng(61.188575, -149.825451),
+          mapTypeId: 'roadmap'
+        });
+
+        var icons = {
+          sound: {
+            icon: 'http://students.uaa.alaska.edu/capstone/images/schlerf_sound.png'
+          },
+          help: {
+            icon: 'http://students.uaa.alaska.edu/capstone/images/schlerf_contact.png'
+          },
+          paw: {
+            icon: 'http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png'
+          }
+        };
+
+      var features = [
+     {
+            position: new google.maps.LatLng(61.188602, -149.825051),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+         {
+            position: new google.maps.LatLng(61.188590, -149.825151),
+            type: 'sound',
+            title: "Sound: 61.188502, -149.825651"
+         },
+
+         {
+            position: new google.maps.LatLng(61.188585, -149.825251),
+            type: 'help',
+            title: "Contact made: 61.188502, -149.825651"
+         },
+
+        {
+            position: new google.maps.LatLng(61.188580, -149.825351),
+            type: 'sound',
+            title: "Sound: 61.188502, -149.825651"
+         },
+
+         {
+            position: new google.maps.LatLng(61.188575, -149.825451),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+                 {
+            position: new google.maps.LatLng(61.188585, -149.825551),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+                 {
+            position: new google.maps.LatLng(61.188590, -149.825651),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+
+                 {
+            position: new google.maps.LatLng(61.188588, -149.825751),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+
+                 {
+            position: new google.maps.LatLng(61.188572, -149.825851),
+            type: 'paw',
+            title: "Trail: 61.188502, -149.825651"
+         },
+
+
+                 {
+            position: new google.maps.LatLng(61.188570, -149.825951),
+            type: 'paw',
+            title: "Sound: 61.188502, -149.825651"
+         }
+      ];
+
+        // Create markers.
+        features.forEach(function(feature) {
+          var marker = new google.maps.Marker({
+            position: feature.position,
+            icon: icons[feature.type].icon,
+            map: map,
+            title: feature.title
+          });
+        });
+
+        var dogpathcords = [
+          {lat: 61.188602, lng: -149.825051},
+          {lat: 61.188590, lng: -149.825151},
+          {lat: 61.188585, lng: -149.825251},
+          {lat: 61.188580, lng: -149.825351},
+          {lat: 61.188575, lng: -149.825451},
+          {lat: 61.188585, lng: -149.825551},
+          {lat: 61.188590, lng: -149.825651},
+          {lat: 61.188588, lng: -149.825751},
+          {lat: 61.188575, lng: -149.825851},
+          {lat: 61.188570, lng: -149.825951}
+        ];
+
+          var dogpath = new google.maps.Polyline({
+          path: dogpathcords,
+          geodesic: true,
+          strokeColor: '#FF3333',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+
+        dogpath.setMap(map);
+      }
+            </script>
+            <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdVrQJBI36GMcXMbah5x_VJOXtOoTU0sw&callback=initMap">
+            </script>
+            </td>
+      </tr>
+      <tr>
+        <td>
+         <center> <button type="button" onclick="alert('I told you to not click the button!')">Don't Click!</button></center>
+        </td>
+      </tr>
+    </table>
+
+    
+  </body>
+</html>

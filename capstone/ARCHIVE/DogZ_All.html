@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <title>Rescue Dog Tracker Landing page</title>
+      <link rel="icon" href="http://students.uaa.alaska.edu/capstone/images/schlerf_paw.png">
+    <style>
+    /* webftp.uaa.alaska.edu/students/capstone
+      http://students.uaa.alaska.edu/capstone/Basic2.html
+       */
+       #map {
+        height: 500px;
+        width: 500px;
+       }
+
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+      <table style="width:500" align="center" border=0>
+        <tr>
+          <td>
+            <div id="map"></div>
+            <script>
+              var map;                                                    //the map .... duh!
+              var dogpathcords = [];                                      //used to populate the polygon path
+
+              //Initialize the map
+              function initMap()    
+              {
+                map = new google.maps.Map(document.getElementById('map'), {
+                  zoom: 19,
+                  center: new google.maps.LatLng(61.188575, -149.825451),
+                  mapTypeId: 'satellite'
+                });
+                var script = document.createElement('script');
+                script.src = 'http://students.uaa.alaska.edu/capstone/test_data3.js';
+                document.getElementsByTagName('head')[0].appendChild(script);
+              }
+
+              // Loop through the results array and place a marker for each
+              // set of coordinates.
+              var nLength = 0;
+              var nMarks;
+              window.eqfeed_callback = function(results) {
+                for (var i = 0; i < results.features.length; i++) 
+                {
+                  var coords = results.features[i].geometry.coordinates;                //pulls the cords array out of the record field
+                  var latLng = new google.maps.LatLng(coords[1],coords[0]);             //creates the Lat/Long variable for the marker
+
+                  var doggyloc = {lat: coords[1], lng: coords[0]};                      //created the polygon object to draw the connecting line with
+                  nLength = results.features.length;
+
+                   if(nLength/2 == i)
+                    nMarks = new google.maps.LatLng(coords[1],coords[0]);
+
+                  // This is the info when you mouse over the icon on the map and displays 
+                  // needed info
+                  var infotag = "Lat: " + coords[1] + "\nLng: " + coords[0] +  
+                                "\nTime: " + results.features[i].properties.time + 
+                                "\nDisaster: " + results.features[i].properties.place + 
+                                "\nEvent: "  + results.features[i].properties.event+ 
+                                "\nDog ID:"  + results.features[i].id;
+
+                  if(results.features[i].properties.event == "Bite 1")
+                  {
+                    //create the map marker
+                          var marker = new google.maps.Marker({
+                          position: latLng,
+                          icon: {
+                          url: results.features[i].properties.url,
+                          scaledSize: new google.maps.Size(30, 30)
+                          },
+                          title: infotag,
+                          map: map
+                        });
+                  }
+
+                  //Pushes the Polygon point object into the arrary of objects
+                  dogpathcords.push(doggyloc);                                  
+                }
+
+                //Create the polygons for the nap
+                var dogpath = new google.maps.Polyline({
+                  path: dogpathcords,
+                  geodesic: true,
+                  strokeColor: '#FFFF00',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 2
+                });
+
+                var dogpath2 = new google.maps.Polyline({
+                  path: dogpathcords,
+                  geodesic: true,
+                  strokeColor: '#000000',
+                  strokeOpacity: 1.0,
+                  strokeWeight: 1
+                });
+
+                //Put said polygons on the map
+                dogpath.setMap(map);
+                dogpath2.setMap(map);
+
+                map.setCenter(nMarks);
+
+              }
+            </script>
+            <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAdVrQJBI36GMcXMbah5x_VJOXtOoTU0sw&callback=initMap"></script>
+          </td>
+        </tr>
+      </table>
+  </body>
+</html>
+
+epeufemio
+30811581
+30339071
